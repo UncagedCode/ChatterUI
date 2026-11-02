@@ -3,6 +3,7 @@ import { Chats } from '@lib/state/Chat'
 import { replaceMacros } from '@lib/state/Macros'
 
 import createLorebookDataSource from './lorebookSource'
+import { createChatSummaryDataSource, createUserMemoryDataSource } from './memorySource'
 import { DataSource, DataSourceResult } from './types'
 
 export const createExampleDataSource = (): DataSource => ({
@@ -83,6 +84,12 @@ export const getDataSources = async (): Promise<DataSource[]> => {
     let dataSources = [createExampleDataSource()]
     const authorNotesSource = await createAuthorNotesDataSource()
     if (authorNotesSource) dataSources.push(authorNotesSource)
+
+    const memorySource = await createUserMemoryDataSource()
+    if (memorySource) dataSources.push(memorySource)
+
+    const summarySource = await createChatSummaryDataSource()
+    if (summarySource) dataSources.push(summarySource)
 
     const lorebooks = await createLorebookDataSource()
     if (lorebooks) {

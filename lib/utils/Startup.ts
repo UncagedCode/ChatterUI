@@ -9,6 +9,7 @@ import { z } from 'zod'
 
 import { migrateData } from '@db/dataMigrations'
 import { Model } from '@lib/engine/Local/Model'
+import { startMemoryMaintenance } from '@lib/engine/Memory/MemoryMaintenance'
 import { Tokenizer } from '@lib/engine/Tokenizer'
 import { setupNotifications } from '@lib/notifications/Notifications'
 import { useAppModeStore } from '@lib/state/AppMode'
@@ -284,6 +285,7 @@ export const startupApp = () => {
     migrateTextIntent_0_8_8_to_0_8_9()
     lockScreenOrientation()
     migrateData()
+    startMemoryMaintenance()
     const backgroundColor = Theme.useColorState.getState().color.neutral._100
     setUIBackgroundColor(backgroundColor)
 

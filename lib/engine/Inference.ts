@@ -18,6 +18,7 @@ import { APIConfiguration, APIValues } from './API/APIBuilder.types'
 import { APIManager } from './API/APIManagerState'
 import { getDataSources } from './DataSources'
 import { localInference } from './LocalInference'
+import { yieldToChat } from './SideTask'
 import { Tokenizer } from './Tokenizer'
 
 export async function regenerateResponse(swipe: ChatSwipe, regenCache: boolean = true) {
@@ -67,6 +68,8 @@ export async function generateResponse(swipeId: number) {
         return
     }
     useInference.getState().startGenerating(swipeId)
+    // a background summary / memory task must not hold the model while the user waits
+    await yieldToChat()
     Logger.info(`Obtaining response.`)
     const appMode = useAppModeStore.getState().appMode
 

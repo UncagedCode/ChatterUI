@@ -114,6 +114,11 @@ const getPaths = (remote: boolean, t: (input: string) => string): ButtonData[] =
               icon: 'branches',
           },
     {
+        name: t('plus.memory.navigation'),
+        path: '/screens/MemoryScreen',
+        icon: 'bulb',
+    },
+    {
         name: t('navigation.sampler'),
         path: '/screens/SamplerManagerScreen',
         icon: 'control',

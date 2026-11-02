@@ -477,3 +477,38 @@ export type CompletionTimings = {
     prompt_ms: number
     prompt_n: number
 }
+
+// MEMORY (ChatterUI Plus)
+
+/** Facts about the user, written automatically from chats or by hand. Added to every chat. */
+export const memories = sqliteTable('memories', {
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+    content: text('content').notNull(),
+    created_at: integer('created_at', { mode: 'timestamp' })
+        .notNull()
+        .$defaultFn(() => new Date()),
+    source_chat_id: integer('source_chat_id', { mode: 'number' }).references(() => chats.id, {
+        onDelete: 'set null',
+    }),
+    enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+})
+
+/** Per-chat rolling summary of messages that no longer fit in the context window. */
+export const chatMemoryState = sqliteTable('chat_memory_state', {
+    chat_id: integer('chat_id', { mode: 'number' })
+        .primaryKey()
+        .references(() => chats.id, { onDelete: 'cascade' }),
+    summary: text('summary').notNull().default(''),
+    /** chat entries with id <= this are covered by the summary */
+    summary_until_entry_id: integer('summary_until_entry_id', { mode: 'number' })
+        .notNull()
+        .default(0),
+    summary_token_count: integer('summary_token_count', { mode: 'number' }).notNull().default(0),
+    /** chat entries with id <= this have been scanned for memories */
+    memory_until_entry_id: integer('memory_until_entry_id', { mode: 'number' })
+        .notNull()
+        .default(0),
+})
+
+export type MemoryType = typeof memories.$inferSelect
+export type ChatMemoryStateType = typeof chatMemoryState.$inferSelect

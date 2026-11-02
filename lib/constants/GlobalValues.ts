@@ -143,6 +143,10 @@ export enum AppSettings {
     WideChatMode = 'settings-wide-chat-mode',
     AlternatingChatMode = 'settings-alternative-chat-mode',
     KeepAwake = 'settings-keep-awake',
+    // ChatterUI Plus
+    AutoMemory = 'plus-auto-memory',
+    ChatSummaries = 'plus-chat-summaries',
+    SimpleMode = 'plus-simple-mode',
 }
 
 /**
@@ -180,6 +184,9 @@ export const AppSettingsDefault: Record<AppSettings, boolean> = {
     [AppSettings.WideChatMode]: false,
     [AppSettings.AlternatingChatMode]: false,
     [AppSettings.KeepAwake]: true,
+    [AppSettings.AutoMemory]: true,
+    [AppSettings.ChatSummaries]: true,
+    [AppSettings.SimpleMode]: true,
 }
 
 export const CLAUDE_VERSION = '2023-06-01'

@@ -1020,6 +1020,33 @@
                 "saved": "Backup saved to Downloads: {{name}}",
                 "failed": "Backup failed: {{error}}"
             }
+        },
+        "memory": {
+            "title": "Memory",
+            "navigation": "Memory",
+            "description": "Your assistant can remember things about you between chats, and keep track of long chats with a running summary. Everything stays on this phone.",
+            "autoMemory": "Remember Things About Me",
+            "autoMemoryDescription": "Every few messages, the model notes new facts you share (like your job or how you like answers). They are added to every chat.",
+            "summaries": "Summarise Long Chats",
+            "summariesDescription": "When a chat gets too long for the model, older messages are summarised so they are not forgotten.",
+            "resetSummary": "Reset This Chat's Summary",
+            "resetSummaryDescription": "The summary of the current chat will be rebuilt from scratch next time it is needed.",
+            "reset": "Reset",
+            "listTitle": "Remembered ({{count}})",
+            "add": "Add Memory",
+            "addDescription": "Write a fact for the assistant to remember, e.g. \"I work night shifts\".",
+            "placeholder": "Something to remember",
+            "edit": "Edit Memory",
+            "editDescription": "Change what the assistant remembers.",
+            "delete": "Delete Memory",
+            "empty": "Nothing remembered yet.",
+            "emptyError": "Write something to remember",
+            "forgetAll": "Forget Everything",
+            "forgetAllDescription": "Delete every remembered fact? This cannot be undone.",
+            "toast": {
+                "remembered": "Remembered {{count}} new thing(s) about you"
+            },
+            "listHint": "Tap a memory to edit it, hold it to delete it, or use the switch to pause it."
         }
     }
 }

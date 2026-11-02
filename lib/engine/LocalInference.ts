@@ -20,6 +20,7 @@ import {
     buildTextCompletionContext,
     ContextBuilderParams,
 } from './API/ContextBuilder'
+import { getDataSources } from './DataSources'
 import { Llama, LlamaConfig } from './Local/LlamaLocal'
 import { KV } from './Local/Model'
 
@@ -506,6 +507,8 @@ const obtainFields = async (): Promise<ContextBuilderParams | void> => {
                 characterCache: await characterState.getCache(userCard.name),
                 instructCache: await instructState.getCache(characterCard.name, userCard.name),
             },
+            // lorebooks, author notes, memory and chat summaries (previously only used remotely)
+            dataSources: await getDataSources(),
         }
     } catch (e) {
         Logger.errorToast(t('generation.errors.failedToOrchestrateRequestBuild'), e)
