@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Pressable, Text, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { useShallow } from 'zustand/react/shallow'
 
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { useAppMode } from '@lib/state/AppMode'
 import { Chats } from '@lib/state/Chat'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 import ChatAttachments from './ChatAttachments'

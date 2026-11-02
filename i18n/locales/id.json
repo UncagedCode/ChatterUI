@@ -1061,6 +1061,16 @@
             "newChat": "New Incognito Chat",
             "chatName": "Incognito",
             "banner": "Incognito: this chat can't see your memories, won't create new ones, and is deleted when you leave it."
+        },
+        "simpleMode": {
+            "title": "Simple Mode",
+            "label": "Simple Mode",
+            "description": "Opens straight into your Assistant chat and moves rarely used tools (samplers, formatting, lorebooks, voice, logs) under 'Advanced' in the menu.",
+            "advanced": "Advanced"
+        },
+        "assistant": {
+            "name": "Assistant",
+            "description": "You are {{char}}, a helpful, honest assistant running privately on {{user}}'s phone. Answer clearly and directly. Use short paragraphs or lists when they make the answer easier to read. If you are not sure about something, say so instead of guessing."
         }
     }
 }

@@ -1,13 +1,13 @@
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Text, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import Avatar from '@components/views/Avatar'
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { Characters } from '@lib/state/Characters'
 import { Chats } from '@lib/state/Chat'
 import { useAvatarViewerStore } from '@lib/state/components/AvatarViewer'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 type ChatFrameProps = {

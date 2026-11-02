@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { useShallow } from 'zustand/react/shallow'
 
 import StringArrayEditor from '@components/input/StringArrayEditor'
 import ThemedSwitch from '@components/input/ThemedSwitch'
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { TagHider } from '@lib/state/TagHider'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 const TagHiderSettings = () => {
     const { t } = useTranslation()

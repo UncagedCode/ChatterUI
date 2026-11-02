@@ -3,8 +3,8 @@ import { Chats } from '@lib/state/Chat'
 import { Memory } from '@lib/state/Memory'
 import { mmkv } from '@lib/storage/MMKV'
 
-import { buildMemoryBlock, buildSummaryBlock, estimateTokens } from '../Memory/MemoryPrompts'
 import { DataSource } from './types'
+import { buildMemoryBlock, buildSummaryBlock, estimateTokens } from '../Memory/MemoryPrompts'
 
 /** at most this share of the context window is spent on remembered facts */
 const MEMORY_CONTEXT_SHARE = 0.2
@@ -56,7 +56,14 @@ export const createChatSummaryDataSource = async (): Promise<DataSource | undefi
         name: 'chat_summary',
         priority: 0,
         tokenBudget: state.summary_token_count || estimateTokens(content),
-        retrieve: async (params, messages, maxLength, currentLength, budget, lastMessageReached) => {
+        retrieve: async (
+            params,
+            messages,
+            maxLength,
+            currentLength,
+            budget,
+            lastMessageReached
+        ) => {
             // the whole chat fits: the summary would only repeat it
             if (lastMessageReached) return []
             return [

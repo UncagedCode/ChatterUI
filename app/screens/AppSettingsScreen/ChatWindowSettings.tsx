@@ -1,11 +1,11 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import ThemedSwitch from '@components/input/ThemedSwitch'
 import SectionTitle from '@components/text/SectionTitle'
 import { AppSettings } from '@lib/constants/GlobalValues'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 const ChatWindowSettings = () => {
     const { t } = useTranslation()

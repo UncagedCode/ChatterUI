@@ -1,11 +1,10 @@
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { Storage } from '@lib/enums/Storage'
-import { createMMKVStorage } from '@lib/storage/MMKV'
+import { useMMKVBoolean, createMMKVStorage } from '@lib/storage/MMKV'
 
 interface TagHiderStoreProps {
     tags: string[]

@@ -6,7 +6,6 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, {
     BounceIn,
     FadeIn,
@@ -31,8 +30,9 @@ import { Characters } from '@lib/state/Characters'
 import { Chats, useInference } from '@lib/state/Chat'
 import { useChatInputTextStore } from '@lib/state/components/ChatInput'
 import { Logger } from '@lib/state/Logger'
-import { pickDocuments } from '@lib/utils/Documents'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
+import { pickDocuments } from '@lib/utils/Documents'
 
 import ChatOptions from './ChatInputOptions'
 

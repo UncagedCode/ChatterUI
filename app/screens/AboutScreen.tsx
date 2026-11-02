@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import appConfig from '@appconfig'
 import SupportButton from '@components/buttons/SupportButton'
@@ -9,6 +8,7 @@ import ThemedButton from '@components/buttons/ThemedButton'
 import HeaderTitle from '@components/views/HeaderTitle'
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { Logger } from '@lib/state/Logger'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 const AboutScreen = () => {

@@ -154,7 +154,7 @@ export enum AppSettings {
  */
 export const AppSettingsDefault: Record<AppSettings, boolean> = {
     [AppSettings.AnimateEditor]: true,
-    [AppSettings.AutoLoadLocal]: false,
+    [AppSettings.AutoLoadLocal]: true, // Plus: load the last used model automatically
     [AppSettings.AutoScroll]: true,
     [AppSettings.ChatOnStartup]: false,
     [AppSettings.CreateFirstMes]: true,

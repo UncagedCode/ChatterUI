@@ -3,11 +3,11 @@ import { Href, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, { Easing, SlideInLeft } from 'react-native-reanimated'
 
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { useAppMode } from '@lib/state/AppMode'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 type ButtonData = {
@@ -68,8 +68,10 @@ const DrawerButton = ({ item, index }: DrawerButtonProps) => {
 const RouteList = () => {
     const { t } = useTranslation()
     const [devMode] = useMMKVBoolean(AppSettings.DevMode)
+    const [simpleMode] = useMMKVBoolean(AppSettings.SimpleMode)
     const { appMode } = useAppMode()
-    const paths = getPaths(appMode === 'remote', t)
+    const allPaths = getPaths(appMode === 'remote', t)
+    const paths = (simpleMode ?? true) ? groupAdvanced(allPaths, t) : allPaths
     return (
         <FlatList
             showsVerticalScrollIndicator={false}
@@ -160,6 +162,26 @@ const getPaths = (remote: boolean, t: (input: string) => string): ButtonData[] =
         icon: 'setting',
     },
 ]
+
+/** Items most people never need; in Simple Mode they sit under one 'Advanced' entry. */
+const ADVANCED_PATHS = new Set<string>([
+    '/screens/SamplerManagerScreen',
+    '/screens/FormattingManagerScreen',
+    '/screens/TTSManagerScreen',
+    '/screens/LogsScreen',
+])
+
+const groupAdvanced = (paths: ButtonData[], t: (input: string) => string): ButtonData[] => {
+    const isAdvanced = (item: ButtonData) =>
+        Array.isArray(item.path) || ADVANCED_PATHS.has(item.path.toString())
+    const main = paths.filter((item) => !isAdvanced(item))
+    const advanced = paths.filter(isAdvanced)
+    if (advanced.length === 0) return paths
+    const settingsIndex = main.findIndex((item) => item.path === '/screens/AppSettingsScreen')
+    const group: ButtonData = { name: t('plus.simpleMode.advanced'), path: advanced, icon: 'tool' }
+    if (settingsIndex === -1) return [...main, group]
+    return [...main.slice(0, settingsIndex), group, ...main.slice(settingsIndex)]
+}
 
 const paths_dev = (t: any): ButtonData[] => [
     /*{

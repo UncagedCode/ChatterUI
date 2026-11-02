@@ -17,7 +17,8 @@ export const checkBackupCompatibility = (
     backupMigrationTimes: number[] | null,
     appMigrationTimes: number[]
 ): BackupCompatibility => {
-    if (!backupMigrationTimes || backupMigrationTimes.length === 0) return { status: 'not_chatterui' }
+    if (!backupMigrationTimes || backupMigrationTimes.length === 0)
+        return { status: 'not_chatterui' }
 
     const known = new Set(appMigrationTimes)
     const unknownSteps = backupMigrationTimes.filter((time) => !known.has(time)).length

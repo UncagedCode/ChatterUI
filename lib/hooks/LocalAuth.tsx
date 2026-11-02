@@ -1,8 +1,8 @@
 import { authenticateAsync, getEnrolledLevelAsync, SecurityLevel } from 'expo-local-authentication'
 import { useCallback, useEffect, useState } from 'react'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import { AppSettings } from '@lib/constants/GlobalValues'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 const useLocalAuth = () => {
     const [success, setSuccess] = useState(false)

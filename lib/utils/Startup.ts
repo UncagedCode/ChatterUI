@@ -5,6 +5,7 @@ import { Paths } from 'expo-file-system'
 import * as KeepAwake from 'expo-keep-awake'
 import { router } from 'expo-router'
 import { setBackgroundColorAsync as setUIBackgroundColor } from 'expo-system-ui'
+import { t } from 'i18next'
 import { z } from 'zod'
 
 import { migrateData } from '@db/dataMigrations'
@@ -46,6 +47,11 @@ const loadNewestChat = async () => {
 
 export const loadChatOnInit = async () => {
     await removeLeftoverIncognitoChats()
+    if (mmkv.getBoolean(AppSettings.SimpleMode) ?? true) {
+        await defaultCardReady
+        if (await openOrCreateFirstChat()) router.push('/screens/ChatScreen')
+        return
+    }
     if (!mmkv.getBoolean(AppSettings.ChatOnStartup)) return
     await loadNewestChat()
     router.push('/screens/ChatScreen')
@@ -73,11 +79,44 @@ const setAppDefaultSettings = () => {
     })
 }
 
+const createAssistantCard = async () => {
+    const id = await Characters.db.mutate.createCard(t('plus.assistant.name'), 'character')
+    await Characters.db.mutate.updateCardField('description', t('plus.assistant.description'), id)
+    return id
+}
+
+let resolveDefaultCard: () => void = () => {}
+/** resolves once startup has created (or skipped creating) the first character */
+const defaultCardReady = new Promise<void>((resolve) => {
+    resolveDefaultCard = resolve
+})
+
 const createDefaultCard = async () => {
     if (!mmkv.getBoolean(AppSettings.CreateDefaultCard)) return
     const result = await Characters.db.query.cardList('character')
-    if (result.length === 0) await Characters.createDefaultCard()
+    if (result.length === 0) {
+        // Simple Mode starts with a plain assistant instead of the roleplay sample character
+        if (mmkv.getBoolean(AppSettings.SimpleMode) ?? true) await createAssistantCard()
+        else await Characters.createDefaultCard()
+    }
     mmkv.set(AppSettings.CreateDefaultCard, false)
+}
+
+/** Simple Mode: open the newest chat, or start one with the first character. */
+const openOrCreateFirstChat = async () => {
+    const newest = await Chats.db.query.chatNewest()
+    if (newest) {
+        await Characters.useCharacterStore.getState().setCard(newest.character_id)
+        await Chats.useChatState.getState().setId(newest.id)
+        return true
+    }
+    const [first] = await Characters.db.query.cardList('character')
+    if (!first) return false
+    const chatId = await Chats.db.mutate.createChat(first.id)
+    if (!chatId) return false
+    await Characters.useCharacterStore.getState().setCard(first.id)
+    await Chats.useChatState.getState().setId(chatId)
+    return true
 }
 
 const setCPUFeatures = async () => {
@@ -264,6 +303,8 @@ export const startupApp = () => {
 
     // Initialize the default card
     createDefaultCard()
+        .catch((e) => Logger.error(`Failed to create default character: ${e}`))
+        .finally(() => resolveDefaultCard())
 
     // get fp16, i8mm and dotprod data
     setCPUFeatures()

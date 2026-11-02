@@ -32,7 +32,9 @@ const ChatAttachments: React.FC<ChatAttachmentsProps> = ({ entry }) => {
                                 maxWidth: '100%',
                             }}>
                             <MaterialIcons name="description" size={18} color={color.text._300} />
-                            <Text numberOfLines={1} style={{ color: color.text._300, flexShrink: 1 }}>
+                            <Text
+                                numberOfLines={1}
+                                style={{ color: color.text._300, flexShrink: 1 }}>
                                 {item.name}
                             </Text>
                         </View>

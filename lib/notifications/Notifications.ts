@@ -2,13 +2,13 @@ import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
 import { useCallback, useEffect } from 'react'
 import { AppState, Linking, Platform } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import Alert from '@components/views/Alert'
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { Characters } from '@lib/state/Characters'
 import { Chats } from '@lib/state/Chat'
 import { Logger } from '@lib/state/Logger'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 export const setupNotifications = () => {
     Notifications.setNotificationHandler({

@@ -2,7 +2,6 @@ import { useFocusEffect } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Platform, View } from 'react-native'
-import { useMMKVBoolean, useMMKVNumber } from '@lib/storage/MMKV'
 import Animated, { Easing, SlideInRight, SlideOutRight } from 'react-native-reanimated'
 import { useShallow } from 'zustand/react/shallow'
 
@@ -17,6 +16,7 @@ import { Llama } from '@lib/engine/Local/LlamaLocal'
 import { KV } from '@lib/engine/Local/Model'
 import useBackendDevices from '@lib/hooks/BackendDevices'
 import { Logger } from '@lib/state/Logger'
+import { useMMKVBoolean, useMMKVNumber } from '@lib/storage/MMKV'
 import { readableFileSize } from '@lib/utils/File'
 
 type ModelSettingsProp = {

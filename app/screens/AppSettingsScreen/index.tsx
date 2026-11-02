@@ -15,6 +15,7 @@ import LanguageSettings from './LanguageSettings'
 import NotificationSettings from './NotificationSettings'
 import ScreenSettings from './ScreenSettings'
 import SecuritySettings from './SecuritySettings'
+import SimpleModeSettings from './SimpleModeSettings'
 import StyleSettings from './StyleSettings'
 
 const AppSettingsMenu = () => {
@@ -31,6 +32,7 @@ const AppSettingsMenu = () => {
             contentContainerStyle={{ rowGap: spacing.sm }}>
             <HeaderTitle title={t('settings.title')} />
 
+            <SimpleModeSettings />
             <StyleSettings />
             <ChatSettings />
             <ChatWindowSettings />

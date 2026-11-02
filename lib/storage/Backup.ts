@@ -4,17 +4,12 @@ import { File, Paths } from 'expo-file-system'
 
 import appConfig from '@appconfig'
 import { DB_NAME, sqliteDB } from '@db/db'
-import {
-    databasePath,
-    getDatabaseKey,
-    importStagingName,
-    safetyCopyName,
-} from '@db/encryption'
+import { databasePath, getDatabaseKey, importStagingName, safetyCopyName } from '@db/encryption'
 import { Logger } from '@lib/state/Logger'
 
-import migrations from '../../db/migrations/migrations'
 import { backupFileName, checkBackupCompatibility } from './BackupCompat'
 import { sqlcipherPassphrase, sqlcipherRawKey } from './SecureKeys'
+import migrations from '../../db/migrations/migrations'
 
 const appVersion: string = appConfig.expo.version
 

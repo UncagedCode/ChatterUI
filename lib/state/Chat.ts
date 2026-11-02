@@ -102,7 +102,8 @@ type ChatSwipeUpdated = Pick<ChatSwipe, 'swipe' | 'id'> & Partial<Omit<ChatSwipe
 export const sendGenerateCompleteNotification = async () => {
     // incognito replies never appear in the notification shade
     const showMessage =
-        mmkv.getBoolean(AppSettings.ShowNotificationText) && !Chats.useChatState.getState().incognito
+        mmkv.getBoolean(AppSettings.ShowNotificationText) &&
+        !Chats.useChatState.getState().incognito
 
     const notificationTitle = showMessage
         ? (Characters.useCharacterStore.getState().card?.name ?? '')

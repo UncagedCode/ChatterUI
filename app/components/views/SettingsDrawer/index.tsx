@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Text, View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import appConfig from '@appconfig'
 import SupportButton from '@components/buttons/SupportButton'
 import Drawer from '@components/views/Drawer'
 import { AppSettings } from '@lib/constants/GlobalValues'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 import AppModeToggle from './AppModeToggle'

@@ -1,8 +1,8 @@
 import React from 'react'
 import { View } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import { AppSettings } from '@lib/constants/GlobalValues'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { Theme } from '@lib/theme/ThemeManager'
 
 type ChatFrameSkeletonProps = {

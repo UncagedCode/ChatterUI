@@ -1,7 +1,6 @@
 import { ImageBackground } from 'expo-image'
 import { useEffect, useRef, useState } from 'react'
 import { FlatList } from 'react-native'
-import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { useShallow } from 'zustand/react/shallow'
 
 import Drawer from '@components/views/Drawer'
@@ -13,6 +12,7 @@ import { useAppMode } from '@lib/state/AppMode'
 import { useBackgroundStore } from '@lib/state/BackgroundImage'
 import { Characters } from '@lib/state/Characters'
 import { Chats, ScrollData } from '@lib/state/Chat'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { AppDirectory } from '@lib/utils/File'
 
 import ChatFooter from './ChatFooter'

@@ -1,7 +1,6 @@
-import { useMMKVBoolean } from '@lib/storage/MMKV'
-
 import { AppSettings } from '@lib/constants/GlobalValues'
 import { useAppMode } from '@lib/state/AppMode'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import { useActiveConnection } from './ActiveConnection'
 

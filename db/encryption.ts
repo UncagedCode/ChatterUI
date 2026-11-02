@@ -2,12 +2,7 @@ import { File } from 'expo-file-system'
 import { defaultDatabaseDirectory, openDatabaseSync, SQLiteDatabase } from 'expo-sqlite'
 
 import { mmkv } from '@lib/storage/MMKV'
-import {
-    randomHexKey,
-    SecureKeyNames,
-    SecureKeys,
-    sqlcipherRawKey,
-} from '@lib/storage/SecureKeys'
+import { randomHexKey, SecureKeyNames, SecureKeys, sqlcipherRawKey } from '@lib/storage/SecureKeys'
 
 /**
  * Database encryption at rest (SQLCipher, enabled via `useSQLCipher` in app.config.js).

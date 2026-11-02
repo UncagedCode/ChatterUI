@@ -1,8 +1,8 @@
 import { getDocumentAsync } from 'expo-document-picker'
 import { File, Paths } from 'expo-file-system'
 
-import { extractPdfText } from '../../modules/pdf-text'
 import { DOCUMENT_MAX_STORED_CHARS, normaliseDocumentText } from './DocumentText'
+import { extractPdfText } from '../../modules/pdf-text'
 
 export type DocumentAttachment = {
     uri: string // plain text file holding the extracted text
@@ -72,7 +72,10 @@ export const pickDocuments = async (): Promise<{
             documents.push({ uri: file.uri, name, type: 'document' })
         } catch (e) {
             const message = `${e}`
-            errors.push({ name, error: message.includes('PDF_PASSWORD') ? 'password' : 'unreadable' })
+            errors.push({
+                name,
+                error: message.includes('PDF_PASSWORD') ? 'password' : 'unreadable',
+            })
         }
     }
     return { documents, errors }

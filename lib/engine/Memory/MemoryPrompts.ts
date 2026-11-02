@@ -3,7 +3,13 @@
  * Kept free of app imports so they can be unit tested.
  */
 
-export type TranscriptLine = { id: number; isUser: boolean; name: string; text: string; tokens: number }
+export type TranscriptLine = {
+    id: number
+    isUser: boolean
+    name: string
+    text: string
+    tokens: number
+}
 
 export type SideMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 
@@ -31,7 +37,10 @@ const clip = (text: string, maxChars: number) =>
 
 export const formatTranscript = (lines: TranscriptLine[], maxCharsPerLine: number) =>
     lines
-        .map((line) => `${line.isUser ? 'User' : 'Assistant'}: ${clip(line.text.trim(), maxCharsPerLine)}`)
+        .map(
+            (line) =>
+                `${line.isUser ? 'User' : 'Assistant'}: ${clip(line.text.trim(), maxCharsPerLine)}`
+        )
         .join('\n\n')
 
 // ---------- memory ----------
@@ -126,7 +135,9 @@ export const selectLinesToSummarise = (
         if (used > recentBudget) break
         firstRecentIndex = i
     }
-    const candidates = lines.slice(0, firstRecentIndex).filter((line) => line.id > summarisedUntilId)
+    const candidates = lines
+        .slice(0, firstRecentIndex)
+        .filter((line) => line.id > summarisedUntilId)
     if (candidates.length < MIN_ENTRIES_TO_SUMMARISE) return []
 
     // only take as much as one summary prompt can hold, oldest first; later runs catch up
@@ -150,7 +161,7 @@ export const buildSummaryMessages = (
         role: 'system',
         content:
             'You write compact running summaries of conversations so they can continue after older ' +
-            'messages are forgotten. Keep names, decisions, facts, open questions and the user\'s goals. ' +
+            "messages are forgotten. Keep names, decisions, facts, open questions and the user's goals. " +
             'Leave out small talk. Write plain sentences, no headings.',
     },
     {
