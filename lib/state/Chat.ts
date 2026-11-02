@@ -86,6 +86,8 @@ type InferenceStateType = {
     abortFunction: () => void | Promise<void>
     nowGenerating: boolean
     currentSwipeId?: number
+    /** whether the reply being (or last) generated belongs to an incognito chat */
+    generatingIncognito: boolean
     startGenerating: (swipeId: number) => void
     stopGenerating: () => void
     setAbort: (fn: () => void | Promise<void>) => void
@@ -103,7 +105,7 @@ export const sendGenerateCompleteNotification = async () => {
     // incognito replies never appear in the notification shade
     const showMessage =
         mmkv.getBoolean(AppSettings.ShowNotificationText) &&
-        !Chats.useChatState.getState().incognito
+        !useInference.getState().generatingIncognito
 
     const notificationTitle = showMessage
         ? (Characters.useCharacterStore.getState().card?.name ?? '')
@@ -152,7 +154,13 @@ export const useInference = create<InferenceStateType>((set, get) => ({
     },
     nowGenerating: false,
     currentSwipeId: undefined,
-    startGenerating: (swipeId: number) => set({ currentSwipeId: swipeId, nowGenerating: true }),
+    generatingIncognito: false,
+    startGenerating: (swipeId: number) =>
+        set({
+            currentSwipeId: swipeId,
+            nowGenerating: true,
+            generatingIncognito: Chats.useChatState.getState().incognito,
+        }),
     stopGenerating: async () => {
         const swipeId = get().currentSwipeId
         if (swipeId) {
@@ -174,8 +182,15 @@ export const useInference = create<InferenceStateType>((set, get) => ({
     },
 }))
 
-const discardIncognitoChat = (chatId: number) => {
-    Chats.db.mutate
+const discardIncognitoChat = async (chatId: number) => {
+    // stop a reply that is still being written, so nothing from it outlives the chat
+    const inference = useInference.getState()
+    if (inference.nowGenerating && inference.generatingIncognito) {
+        try {
+            await inference.abortFunction()
+        } catch {}
+    }
+    await Chats.db.mutate
         .deleteChat(chatId)
         .then(() => Logger.info('Incognito chat discarded'))
         .catch((e) => Logger.error(`Failed to discard incognito chat: ${e}`))

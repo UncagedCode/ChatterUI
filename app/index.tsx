@@ -8,6 +8,7 @@ import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ThemedButton from '@components/buttons/ThemedButton'
 import HeaderTitle from '@components/views/HeaderTitle'
 import { db } from '@db/db'
+import { databaseOpenError } from '@db/encryption'
 import useLocalAuth from '@lib/hooks/LocalAuth'
 import { Theme } from '@lib/theme/ThemeManager'
 import { loadChatOnInit, startupApp, useTextIntentFocus } from '@lib/utils/Startup'
@@ -48,6 +49,15 @@ const Home = () => {
     const styles = useStyles()
     const { authorized, retry, error, success } = useStartupRoutine()
     const { t } = useTranslation()
+    if (databaseOpenError)
+        return (
+            <View style={styles.centeredContainer}>
+                <HeaderTitle />
+                <Text style={styles.title}>{t('plus.dbLocked.title')}</Text>
+                <Text style={styles.subtitle}>{t('plus.dbLocked.description')}</Text>
+                <Text style={styles.errorLog}>{databaseOpenError}</Text>
+            </View>
+        )
     if (error)
         return (
             <View style={styles.centeredContainer}>

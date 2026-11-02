@@ -42,7 +42,10 @@ export const randomHexKey = (byteCount: number = 32) => toHex(getRandomBytes(byt
 export const SecureKeys = {
     get: (name: SecureKeyName): string | null => SecureStore.getItem(name),
     set: (name: SecureKeyName, value: string) => SecureStore.setItem(name, value),
-    remove: (name: SecureKeyName) => SecureStore.deleteItemAsync(name),
+    remove: (name: SecureKeyName) =>
+        SecureStore.deleteItemAsync(name).catch((e) =>
+            console.warn(`[SecureKeys] Could not remove ${name}: ${e}`)
+        ),
 }
 
 /** SQL literal for a raw 256-bit SQLCipher key */

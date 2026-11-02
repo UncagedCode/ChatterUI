@@ -15,8 +15,8 @@ describe('formatDocumentsForContext', () => {
 
     it('cuts large documents to fit and says so', () => {
         const text = 'x'.repeat(50_000)
-        const out = formatDocumentsForContext([{ name: 'big.pdf', text }], 4096)
-        expect(out.length).toBeLessThan(4096 * 0.5 * 3.5 + 300)
+        const out = formatDocumentsForContext([{ name: 'big.pdf', text }], 2000)
+        expect(out.length).toBeLessThan(2000 * 3.5 + 300)
         expect(out).toContain('Only the first')
     })
 

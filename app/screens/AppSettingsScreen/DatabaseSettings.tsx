@@ -24,6 +24,8 @@ const DatabaseSettings = () => {
     const { color, spacing } = Theme.useTheme()
     const exportSheet = useRef<BottomSheetRefFunctions>(null)
     const restoreSheet = useRef<BottomSheetRefFunctions>(null)
+    const confirmSheet = useRef<BottomSheetRefFunctions>(null)
+    const [pendingPassword, setPendingPassword] = useState<string | undefined>()
     const [restoreUri, setRestoreUri] = useState<string | undefined>()
     const [busy, setBusy] = useState(false)
     const [canUndo, setCanUndo] = useState(() => hasSafetyCopy())
@@ -144,7 +146,29 @@ const DatabaseSettings = () => {
                 description={t('plus.backup.create.description')}
                 placeholder={t('plus.backup.passwordPlaceholder')}
                 confirmLabel={t('plus.backup.create.confirm')}
-                onConfirm={runExport}
+                onConfirm={(password) => {
+                    if (!password) return runExport('')
+                    // a typo would make the backup impossible to open: ask twice
+                    setPendingPassword(password)
+                    setTimeout(() => confirmSheet.current?.open(), 300)
+                }}
+            />
+
+            <InputSheet
+                ref={confirmSheet}
+                secure
+                title={t('plus.backup.confirmPassword.title')}
+                description={t('plus.backup.confirmPassword.description')}
+                placeholder={t('plus.backup.passwordPlaceholder')}
+                confirmLabel={t('plus.backup.create.confirm')}
+                verifyText={(text) =>
+                    text === pendingPassword ? '' : t('plus.backup.confirmPassword.mismatch')
+                }
+                onConfirm={(password) => {
+                    setPendingPassword(undefined)
+                    runExport(password)
+                }}
+                onClose={() => setPendingPassword(undefined)}
             />
 
             <InputSheet

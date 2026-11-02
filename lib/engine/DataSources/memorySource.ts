@@ -8,6 +8,8 @@ import { buildMemoryBlock, buildSummaryBlock, estimateTokens } from '../Memory/M
 
 /** at most this share of the context window is spent on remembered facts */
 const MEMORY_CONTEXT_SHARE = 0.2
+/** hard cap on the space reserved for memories before messages are added */
+const MEMORY_MAX_TOKENS = 500
 
 export const createUserMemoryDataSource = async (): Promise<DataSource | undefined> => {
     if (!(mmkv.getBoolean(AppSettings.AutoMemory) ?? true)) return
@@ -15,7 +17,7 @@ export const createUserMemoryDataSource = async (): Promise<DataSource | undefin
     if (Chats.useChatState.getState().incognito) return
     const facts = await Memory.db.query.enabledContents()
     if (facts.length === 0) return
-    const estimate = estimateTokens(buildMemoryBlock(facts))
+    const estimate = Math.min(estimateTokens(buildMemoryBlock(facts)), MEMORY_MAX_TOKENS)
 
     return {
         name: 'user_memory',

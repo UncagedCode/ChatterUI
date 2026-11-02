@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo'
+import { requireOptionalNativeModule } from 'expo'
 
 type PdfTextResult = { text: string; pages: number; pagesRead: number }
 
@@ -6,7 +6,12 @@ type PdfTextModule = {
     extractText: (uri: string, maxPages: number) => Promise<PdfTextResult>
 }
 
-const PdfText = requireNativeModule<PdfTextModule>('PdfText')
+// Optional so the app still starts if the native part is missing from a build
+const PdfText = requireOptionalNativeModule<PdfTextModule>('PdfText')
 
-export const extractPdfText = (uri: string, maxPages: number = 200) =>
-    PdfText.extractText(uri, maxPages)
+export const isPdfSupported = () => PdfText !== null
+
+export const extractPdfText = async (uri: string, maxPages: number = 200) => {
+    if (!PdfText) throw new Error('PDF_UNSUPPORTED')
+    return await PdfText.extractText(uri, maxPages)
+}

@@ -39,8 +39,11 @@ export const exportBackup = async (password: string) => {
         const key = encrypted ? sqlcipherPassphrase(password) : "''"
         sqliteDB.execSync(`ATTACH DATABASE ${sqlPath(target.uri)} AS backup KEY ${key};`)
         sqliteDB.execSync(`SELECT sqlcipher_export('backup');`)
-        // incognito chats are never part of a backup
+        // incognito chats are never part of a backup; overwrite and compact so no trace of
+        // their text remains in free pages of the file
+        sqliteDB.execSync(`PRAGMA backup.secure_delete = ON;`)
         sqliteDB.execSync(`DELETE FROM backup.chats WHERE incognito = 1;`)
+        sqliteDB.execSync(`VACUUM backup;`)
         detachQuietly('backup')
         await localDownload(target.uri.replace('file://', ''))
         return { ok: true as const, name }
@@ -93,7 +96,7 @@ export const prepareRestore = async (uri: string, password: string): Promise<Res
     const staging = new File('file://' + databasePath(importStagingName(DB_NAME)))
     try {
         if (source.exists) source.delete()
-        new File(uri).copy(source)
+        new File(uri).copySync(source)
         if (staging.exists) staging.delete()
 
         if (!attachSource(source.uri, password)) return { ok: false, reason: 'wrong_password' }
@@ -138,7 +141,8 @@ export const undoLastRestore = () => {
     if (!safety.exists) return false
     const staging = new File('file://' + databasePath(importStagingName(DB_NAME)))
     if (staging.exists) staging.delete()
-    safety.copy(staging)
+    // must be complete before the app restarts and swaps it in
+    safety.copySync(staging)
     return true
 }
 

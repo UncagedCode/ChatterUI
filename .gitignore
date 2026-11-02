@@ -8,6 +8,8 @@ public/
 
 # builds
 android
+# local native modules keep their android sources
+!modules/*/android
 eas.json
 *.apk
 .gradle

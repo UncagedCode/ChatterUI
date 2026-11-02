@@ -29,12 +29,12 @@ import { Logger } from '../state/Logger'
 import { mmkv } from '../storage/MMKV'
 import { Theme } from '../theme/ThemeManager'
 
-const removeLeftoverIncognitoChats = async () => {
-    try {
-        await Chats.db.mutate.deleteIncognitoChats()
-    } catch (e) {
-        Logger.error(`Failed to remove incognito chats: ${e}`)
-    }
+let incognitoCleanup: Promise<void> | undefined
+const removeLeftoverIncognitoChats = () => {
+    incognitoCleanup ??= Chats.db.mutate
+        .deleteIncognitoChats()
+        .catch((e) => Logger.error(`Failed to remove incognito chats: ${e}`))
+    return incognitoCleanup
 }
 
 const loadNewestChat = async () => {

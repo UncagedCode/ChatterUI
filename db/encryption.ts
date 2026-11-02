@@ -11,6 +11,9 @@ import { randomHexKey, SecureKeyNames, SecureKeys, sqlcipherRawKey } from '@lib/
  * - A plaintext db.db (from before encryption existed) is converted on first launch.
  * - Backups being restored are prepared as `<name>.import` (already encrypted with the device
  *   key) and swapped in here, before the database is opened.
+ *
+ * All file operations here are synchronous on purpose: they must finish before SQLite opens
+ * the database path.
  */
 
 export const RERUN_DATA_MIGRATIONS_FLAG = 'chatteruiplus.rerun-data-migrations'
@@ -20,6 +23,8 @@ const dirPath = (defaultDatabaseDirectory as string).replace(/^file:\/\//, '').r
 export const databasePath = (name: string) => `${dirPath}/${name}`
 const fileOf = (name: string) => new File('file://' + databasePath(name))
 
+const SIDECARS = ['-journal', '-wal', '-shm']
+
 const deleteIfExists = (name: string) => {
     const file = fileOf(name)
     if (file.exists) file.delete()
@@ -27,66 +32,59 @@ const deleteIfExists = (name: string) => {
 
 const deleteWithSidecars = (name: string) => {
     deleteIfExists(name)
-    deleteIfExists(name + '-wal')
-    deleteIfExists(name + '-shm')
-    deleteIfExists(name + '-journal')
+    for (const suffix of SIDECARS) deleteIfExists(name + suffix)
+}
+
+/** Moves a database and its journal files together, replacing whatever is at the target. */
+const moveWithSidecars = (from: string, to: string) => {
+    deleteWithSidecars(to)
+    fileOf(from).moveSync(fileOf(to))
+    for (const suffix of SIDECARS) {
+        const sidecar = fileOf(from + suffix)
+        if (sidecar.exists) sidecar.moveSync(fileOf(to + suffix))
+    }
 }
 
 export const importStagingName = (name: string) => `${name}.import`
 export const safetyCopyName = (name: string) => `${name}.before-restore`
+const previousSafetyName = (name: string) => `${name}.before-restore.old`
 
-/** Returns true if `key` opens the database file `name`. */
-const keyOpens = (name: string, hexKey: string) => {
-    let probe: SQLiteDatabase | undefined
+const probe = (name: string, hexKey?: string) => {
+    let connection: SQLiteDatabase | undefined
     try {
-        probe = openDatabaseSync(name, { useNewConnection: true })
-        probe.execSync(`PRAGMA key = ${sqlcipherRawKey(hexKey)};`)
-        probe.getFirstSync('SELECT count(*) FROM sqlite_master;')
+        connection = openDatabaseSync(name, { useNewConnection: true })
+        if (hexKey) connection.execSync(`PRAGMA key = ${sqlcipherRawKey(hexKey)};`)
+        connection.getFirstSync('SELECT count(*) FROM sqlite_master;')
         return true
     } catch {
         return false
     } finally {
         try {
-            probe?.closeSync()
-        } catch {}
-    }
-}
-
-const isPlaintextDatabase = (name: string) => {
-    let probe: SQLiteDatabase | undefined
-    try {
-        probe = openDatabaseSync(name, { useNewConnection: true })
-        probe.getFirstSync('SELECT count(*) FROM sqlite_master;')
-        return true
-    } catch {
-        return false
-    } finally {
-        try {
-            probe?.closeSync()
+            connection?.closeSync()
         } catch {}
     }
 }
 
 /** Swap in a restored backup that was prepared by the backup screen. */
 const applyStagedImport = (name: string) => {
-    const staged = fileOf(importStagingName(name))
-    if (!staged.exists) return
+    if (!fileOf(importStagingName(name)).exists) return
     console.log('[DB] Applying restored backup')
-    // keep the previous database until the next restore, in case the user wants it back
-    deleteWithSidecars(safetyCopyName(name))
-    const current = fileOf(name)
-    if (current.exists) current.move(fileOf(safetyCopyName(name)))
-    deleteIfExists(name + '-wal')
-    deleteIfExists(name + '-shm')
-    deleteIfExists(name + '-journal')
-    staged.move(fileOf(name))
+    // keep the previous safety copy until the swap has fully succeeded
+    if (fileOf(safetyCopyName(name)).exists)
+        moveWithSidecars(safetyCopyName(name), previousSafetyName(name))
+    if (fileOf(name).exists) moveWithSidecars(name, safetyCopyName(name))
+    moveWithSidecars(importStagingName(name), name)
+    deleteWithSidecars(previousSafetyName(name))
     // data migrations are tracked in settings, which describe the *old* database
     mmkv.set(RERUN_DATA_MIGRATIONS_FLAG, true)
 }
 
+const plaintextBackupName = (name: string) => name + '.plaintext'
+const encryptingName = (name: string) => name + '.encrypting'
+
 /** Converts a plaintext database to an encrypted one and returns the key. */
 const encryptPlaintextDatabase = (name: string): string => {
-    const tempName = name + '.encrypting'
+    const tempName = encryptingName(name)
     deleteWithSidecars(tempName)
 
     // remember the key *before* writing anything with it
@@ -104,21 +102,37 @@ const encryptPlaintextDatabase = (name: string): string => {
         plain.closeSync()
     }
 
-    if (!keyOpens(tempName, key)) throw new Error('Encrypted copy could not be verified')
+    if (!probe(tempName, key)) throw new Error('Encrypted copy could not be verified')
 
-    deleteWithSidecars(name)
-    fileOf(tempName).move(fileOf(name))
+    // keep the plaintext original until the encrypted copy is in place
+    moveWithSidecars(name, plaintextBackupName(name))
+    moveWithSidecars(tempName, name)
     SecureKeys.set(SecureKeyNames.Database, key)
+    deleteWithSidecars(plaintextBackupName(name))
     SecureKeys.remove(SecureKeyNames.DatabasePending)
     return key
 }
 
+/** Finishes a conversion that was interrupted part way. */
+const recoverInterruptedEncryption = (name: string) => {
+    if (!fileOf(name).exists && fileOf(plaintextBackupName(name)).exists) {
+        // interrupted between the two moves: put the original back and start again
+        moveWithSidecars(plaintextBackupName(name), name)
+    }
+    deleteWithSidecars(encryptingName(name))
+}
+
+class MissingKeyError extends Error {}
+
 const resolveDatabaseKey = (name: string): string => {
+    // A keystore read error is thrown, not treated as "no key": a temporary failure must never
+    // lead to a new key being written over the real one.
     const key = SecureKeys.get(SecureKeyNames.Database)
     if (key) return key
 
-    const exists = fileOf(name).exists
-    if (!exists) {
+    recoverInterruptedEncryption(name)
+
+    if (!fileOf(name).exists) {
         // Fresh install
         const fresh = randomHexKey()
         SecureKeys.set(SecureKeyNames.Database, fresh)
@@ -127,29 +141,37 @@ const resolveDatabaseKey = (name: string): string => {
 
     // An interrupted conversion may have already swapped in the encrypted file
     const pending = SecureKeys.get(SecureKeyNames.DatabasePending)
-    if (pending && keyOpens(name, pending)) {
+    if (pending && probe(name, pending)) {
         SecureKeys.set(SecureKeyNames.Database, pending)
         SecureKeys.remove(SecureKeyNames.DatabasePending)
         return pending
     }
 
-    if (isPlaintextDatabase(name)) return encryptPlaintextDatabase(name)
+    if (probe(name)) return encryptPlaintextDatabase(name)
 
-    throw new Error('Database is encrypted but its key is missing')
+    throw new MissingKeyError('Database is encrypted but its key is missing')
 }
 
-/** Moves an unreadable database aside so the app can start, without deleting anything. */
-const quarantine = (name: string) => {
-    const file = fileOf(name)
-    if (!file.exists) return
-    const target = `${name}.unreadable-${Date.now()}`
-    console.error(`[DB] Database could not be opened, moved to ${target}`)
-    file.move(fileOf(target))
-    deleteIfExists(name + '-wal')
-    deleteIfExists(name + '-shm')
-}
+/**
+ * Set when the real database could not be unlocked. The app then runs on an empty in-memory
+ * database and shows an error screen, so nothing on disk is touched.
+ */
+export let databaseOpenError: string | undefined
 
 export const openEncryptedDatabase = (
+    name: string,
+    open: (name: string) => SQLiteDatabase
+): SQLiteDatabase => {
+    try {
+        return openEncryptedDatabaseInternal(name, open)
+    } catch (e) {
+        console.error('[DB] Could not open database', e)
+        databaseOpenError = `${e}`
+        return openDatabaseSync(':memory:')
+    }
+}
+
+const openEncryptedDatabaseInternal = (
     name: string,
     open: (name: string) => SQLiteDatabase
 ): SQLiteDatabase => {
@@ -163,23 +185,27 @@ export const openEncryptedDatabase = (
     try {
         key = resolveDatabaseKey(name)
     } catch (e) {
-        console.error('[DB]', e)
-        quarantine(name)
+        if (!(e instanceof MissingKeyError)) throw e // keystore trouble: fail, change nothing
+        // The file is encrypted and no key exists anywhere, so it can never be opened again.
+        // Keep it aside anyway and start with an empty database.
+        const target = `${name}.unreadable-${Date.now()}`
+        console.error(`[DB] ${e}. Moved to ${target}`)
+        moveWithSidecars(name, target)
         key = randomHexKey()
         SecureKeys.set(SecureKeyNames.Database, key)
     }
 
     const database = open(name)
-    database.execSync(`PRAGMA key = ${sqlcipherRawKey(key)};`)
     try {
+        database.execSync(`PRAGMA key = ${sqlcipherRawKey(key)};`)
+        // A wrong key shows up here as "file is not a database". Nothing is moved or replaced:
+        // the error screen is shown and the data stays where it is.
         database.getFirstSync('SELECT count(*) FROM sqlite_master;')
     } catch (e) {
-        console.error('[DB] Key rejected', e)
-        database.closeSync()
-        quarantine(name)
-        const reopened = open(name)
-        reopened.execSync(`PRAGMA key = ${sqlcipherRawKey(key)};`)
-        return reopened
+        try {
+            database.closeSync()
+        } catch {}
+        throw e
     }
     return database
 }

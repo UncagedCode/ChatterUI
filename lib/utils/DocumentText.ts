@@ -3,7 +3,7 @@
 /** stored text is capped so a huge file cannot fill the phone or freeze the chat */
 export const DOCUMENT_MAX_STORED_CHARS = 400_000
 /** at most this share of the context window goes to the documents of one message */
-export const DOCUMENT_CONTEXT_SHARE = 0.5
+export const DOCUMENT_CONTEXT_SHARE = 0.35
 const CHARS_PER_TOKEN = 3.5
 
 export const normaliseDocumentText = (text: string) =>
@@ -22,10 +22,10 @@ export type DocumentForContext = { name: string; text: string }
  */
 export const formatDocumentsForContext = (
     documents: DocumentForContext[],
-    contextLength: number
+    tokenBudget: number
 ): string => {
-    if (documents.length === 0) return ''
-    const totalChars = Math.floor(contextLength * DOCUMENT_CONTEXT_SHARE * CHARS_PER_TOKEN)
+    if (documents.length === 0 || tokenBudget <= 0) return ''
+    const totalChars = Math.floor(tokenBudget * CHARS_PER_TOKEN)
     const perDocument = Math.max(Math.floor(totalChars / documents.length), 200)
     return documents
         .map(({ name, text }) => {

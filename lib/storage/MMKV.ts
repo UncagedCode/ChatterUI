@@ -21,9 +21,12 @@ const DEFAULT_ID = 'mmkv.default'
 
 const openEncryptedStore = (): MMKV => {
     const existingKey = SecureKeys.get(SecureKeyNames.Settings)
-    const encrypted = SecureKeys.get(SecureKeyNames.SettingsEncrypted) === '1'
+    const state = SecureKeys.get(SecureKeyNames.SettingsEncrypted)
 
-    if (existingKey && encrypted) {
+    // 'pending' means the last launch stopped during re-encryption, which is a single quick
+    // write: treat the store as encrypted rather than risk re-encrypting it twice.
+    if (existingKey && (state === '1' || state === 'pending')) {
+        if (state === 'pending') SecureKeys.set(SecureKeyNames.SettingsEncrypted, '1')
         return createMMKV({ id: DEFAULT_ID, encryptionKey: existingKey })
     }
 
@@ -32,6 +35,7 @@ const openEncryptedStore = (): MMKV => {
 
     // Store is still plaintext (fresh install or pre-encryption data): encrypt it in place
     const store = createMMKV({ id: DEFAULT_ID })
+    SecureKeys.set(SecureKeyNames.SettingsEncrypted, 'pending')
     store.recrypt(key)
     SecureKeys.set(SecureKeyNames.SettingsEncrypted, '1')
     return store

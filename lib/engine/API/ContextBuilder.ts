@@ -9,7 +9,7 @@ import { defaultSystemPromptFormat, InstructTokenCache, InstructType } from '@li
 import { Logger } from '@lib/state/Logger'
 import { replaceMacros } from '@lib/state/Macros'
 import { mmkv } from '@lib/storage/MMKV'
-import { formatDocumentsForContext } from '@lib/utils/DocumentText'
+import { DOCUMENT_CONTEXT_SHARE, formatDocumentsForContext } from '@lib/utils/DocumentText'
 import { readBase64Async, readStringAsync } from '@lib/utils/File'
 import { Macro } from '@lib/utils/Macros'
 
@@ -33,12 +33,12 @@ const documentCache = new Map<string, { text: string; tokens: number }>()
 
 const loadDocuments = async (
     entry: ChatEntry,
-    maxLength: number,
+    tokenBudget: number,
     tokenizer: ContextBuilderParams['tokenizer']
 ) => {
     const documents = entry.attachments?.filter((item) => item.type === 'document') ?? []
-    if (documents.length === 0) return { text: '', tokens: 0 }
-    const key = documents.map((item) => item.uri).join('|') + '@' + maxLength
+    if (documents.length === 0 || tokenBudget <= 0) return { text: '', tokens: 0 }
+    const key = documents.map((item) => item.uri).join('|') + '@' + Math.floor(tokenBudget)
     const cached = documentCache.get(key)
     if (cached) return cached
     const loaded = await Promise.all(
@@ -49,7 +49,7 @@ const loadDocuments = async (
     )
     const text = formatDocumentsForContext(
         loaded.filter((item) => item.text),
-        maxLength
+        tokenBudget
     )
     const result = { text, tokens: text ? await tokenizer(text) : 0 }
     if (documentCache.size > 50) documentCache.clear()
@@ -153,6 +153,7 @@ export const collectContext = async (params: ContextBuilderParams & { mode: 'cha
     let completionState: CompletionState = 'initial_completed'
 
     const contextMessages: ContextMessage[] = []
+    let newestUserSeen = false
 
     /**
      * Shared processor
@@ -185,9 +186,22 @@ export const collectContext = async (params: ContextBuilderParams & { mode: 'cha
                 : instructCache.output_prefix_length
         }
 
-        const documents = await loadDocuments(message, maxLength, tokenizer)
+        // The user's latest message must always fit, so its files get whatever space is left;
+        // older messages' files get a fixed share and are dropped with the message if needed.
+        const baseLen = swipeLen + timestampLen + nameLen + instructLen
+        // (the newest message with content is the user's latest, the empty reply comes after it)
+        const isNewestUser = message.is_user && !newestUserSeen
+        if (message.is_user) newestUserSeen = true
+        const documentBudget = isNewestUser
+            ? Math.min(
+                  maxLength * DOCUMENT_CONTEXT_SHARE,
+                  // small margin because the cut is made on an estimate
+                  (maxLength - totalLength - baseLen) * 0.9
+              )
+            : maxLength * DOCUMENT_CONTEXT_SHARE
+        const documents = await loadDocuments(message, documentBudget, tokenizer)
 
-        const shardLen = swipeLen + timestampLen + nameLen + instructLen + documents.tokens
+        const shardLen = baseLen + documents.tokens
 
         // HARD LIMIT (always enforced)
         if (totalLength + shardLen > maxLength && !bypassContextLength) {

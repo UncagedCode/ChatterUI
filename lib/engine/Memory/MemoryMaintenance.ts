@@ -8,7 +8,7 @@ import { Memory } from '@lib/state/Memory'
 import { SamplersManager } from '@lib/state/SamplerState'
 import { mmkv } from '@lib/storage/MMKV'
 
-import { canRunSideTask, isSideTaskCancelled, runSideCompletion } from '../SideTask'
+import { isSideTaskCancelled, runSideCompletion, runSideTask } from '../SideTask'
 import {
     buildMemoryExtractionMessages,
     buildSummaryMessages,
@@ -55,7 +55,6 @@ const updateSummary = async (chatId: number, lines: TranscriptLine[]) => {
     Logger.info(`[Memory] Summarising ${batch.length} older messages`)
     const output = await runSideCompletion(buildSummaryMessages(state.summary, batch), {
         maxTokens: 400,
-        label: 'summary',
     })
     if (!output) return
     const summary = cleanSummary(output)
@@ -80,7 +79,7 @@ const updateMemories = async (chatId: number, lines: TranscriptLine[]) => {
     // the newest messages are the most useful; keep the prompt small
     const output = await runSideCompletion(
         buildMemoryExtractionMessages(existing.slice(0, 60), fresh.slice(-16)),
-        { maxTokens: 200, label: 'memory' }
+        { maxTokens: 200 }
     )
     if (output === undefined) return
     const facts = parseExtractedFacts(output, existing)
@@ -97,16 +96,12 @@ export const maintainChat = async (chatId: number) => {
     const summaries = mmkv.getBoolean(AppSettings.ChatSummaries) ?? true
     const autoMemory = mmkv.getBoolean(AppSettings.AutoMemory) ?? true
     if (!summaries && !autoMemory) return
-    if (!canRunSideTask()) return
 
-    try {
+    await runSideTask('memory', async () => {
         const lines = await loadTranscript(chatId)
-        if (summaries) await updateSummary(chatId, lines)
-        if (isSideTaskCancelled() || useInference.getState().nowGenerating) return
-        if (autoMemory) await updateMemories(chatId, lines)
-    } catch (e) {
-        Logger.warn(`[Memory] Maintenance failed: ${e}`)
-    }
+        if (summaries && !isSideTaskCancelled()) await updateSummary(chatId, lines)
+        if (autoMemory && !isSideTaskCancelled()) await updateMemories(chatId, lines)
+    })
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined

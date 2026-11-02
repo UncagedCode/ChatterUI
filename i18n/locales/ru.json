@@ -1019,6 +1019,11 @@
             "toast": {
                 "saved": "Backup saved to Downloads: {{name}}",
                 "failed": "Backup failed: {{error}}"
+            },
+            "confirmPassword": {
+                "title": "Confirm Password",
+                "description": "Type the password again. Without it, this backup cannot be opened.",
+                "mismatch": "The passwords don't match"
             }
         },
         "memory": {
@@ -1071,6 +1076,10 @@
         "assistant": {
             "name": "Assistant",
             "description": "You are {{char}}, a helpful, honest assistant running privately on {{user}}'s phone. Answer clearly and directly. Use short paragraphs or lists when they make the answer easier to read. If you are not sure about something, say so instead of guessing."
+        },
+        "dbLocked": {
+            "title": "Chats Could Not Be Unlocked",
+            "description": "Your data is still on the phone and nothing has been deleted. Close the app fully, restart your phone and open it again. If this keeps happening, send the message below to whoever helps you with the app."
         }
     }
 }
