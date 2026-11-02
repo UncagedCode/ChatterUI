@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Text, View } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import appConfig from '@appconfig'
 import SupportButton from '@components/buttons/SupportButton'

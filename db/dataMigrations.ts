@@ -4,6 +4,7 @@ import { db } from '@db/db'
 import { Logger } from '@lib/state/Logger'
 import { mmkv } from '@lib/storage/MMKV'
 
+import { RERUN_DATA_MIGRATIONS_FLAG } from './encryption'
 import { chatSwipes } from './schema'
 
 const MIGRATION_TAG = '[MIGRATION]'
@@ -57,7 +58,11 @@ type MigrateDataParams = {
  * This data migration is needed as drizzle-orm does not allow for DML in custom migrations
  * @param MigrateDataParams
  */
-export const migrateData = async ({ bypass }: MigrateDataParams = {}) => {
+export const migrateData = async ({ bypass: bypassParam }: MigrateDataParams = {}) => {
+    // after restoring a backup the stored 'already ran' flags describe the old database
+    const restored = mmkv.getBoolean(RERUN_DATA_MIGRATIONS_FLAG) ?? false
+    const bypass = bypassParam || restored
+    if (restored) mmkv.remove(RERUN_DATA_MIGRATIONS_FLAG)
     for (const migrationId in migrationRoutines) {
         const migrationCheck = mmkv.getBoolean(migrationId)
         if (migrationCheck && !bypass) continue

@@ -6,7 +6,7 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, Pressable, TextInput, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, {
     BounceIn,
     FadeIn,

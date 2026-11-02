@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Text, View } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated'
 import { useShallow } from 'zustand/react/shallow'
 

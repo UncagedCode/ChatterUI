@@ -22,6 +22,7 @@ export type InputSheetProps = {
     defaultValue?: string
     multiline?: boolean
     confirmLabel?: string
+    secure?: boolean
 }
 
 export type InputSheetRef = BottomSheetRef
@@ -38,6 +39,7 @@ const InputSheet: React.FC<InputSheetProps> = ({
     defaultValue = '',
     multiline = false,
     confirmLabel,
+    secure = false,
 }) => {
     const { t } = useTranslation()
     const [text, setText] = useState(defaultValue)
@@ -74,7 +76,10 @@ const InputSheet: React.FC<InputSheetProps> = ({
 
                 <View style={{ flexDirection: 'row', columnGap: spacing.m }}>
                     <ThemedTextInput
-                        multiline={multiline}
+                        multiline={multiline && !secure}
+                        secureTextEntry={secure}
+                        autoCorrect={!secure}
+                        autoCapitalize={secure ? 'none' : undefined}
                         autoFocus={autoFocus}
                         placeholder={placeholder}
                         defaultValue={defaultValue}
@@ -126,6 +131,7 @@ const InputSheet: React.FC<InputSheetProps> = ({
                             else {
                                 onConfirm(text)
                                 handleClose()
+                                if (secure) setText('')
                             }
                         }}
                     />

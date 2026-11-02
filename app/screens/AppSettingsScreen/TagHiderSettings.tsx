@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { useShallow } from 'zustand/react/shallow'
 
 import StringArrayEditor from '@components/input/StringArrayEditor'

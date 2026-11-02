@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
 import { useCallback, useEffect } from 'react'
 import { AppState, Linking, Platform } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 
 import Alert from '@components/views/Alert'
 import { AppSettings } from '@lib/constants/GlobalValues'

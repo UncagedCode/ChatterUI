@@ -64,6 +64,7 @@
     "expo-notifications": "~57.0.20",
     "expo-router": "~57.0.22",
     "expo-screen-orientation": "~57.0.2",
+    "expo-secure-store": "~57.0.0",
     "expo-speech": "~57.0.3",
     "expo-splash-screen": "~57.0.9",
     "expo-sqlite": "~57.0.3",

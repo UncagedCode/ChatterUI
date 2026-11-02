@@ -91,7 +91,7 @@ module.exports = {
                     cameraPermission: 'Allow ChatterUI to access your camera',
                 },
             ],
-            ['expo-sqlite', { withSQLiteVecExtension: true }],
+            ['expo-sqlite', { withSQLiteVecExtension: true, useSQLCipher: true }],
             [
                 'expo-image-picker',
                 {

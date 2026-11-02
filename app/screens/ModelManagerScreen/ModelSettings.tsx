@@ -2,7 +2,7 @@ import { useFocusEffect } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Platform, View } from 'react-native'
-import { useMMKVBoolean, useMMKVNumber } from 'react-native-mmkv'
+import { useMMKVBoolean, useMMKVNumber } from '@lib/storage/MMKV'
 import Animated, { Easing, SlideInRight, SlideOutRight } from 'react-native-reanimated'
 import { useShallow } from 'zustand/react/shallow'
 

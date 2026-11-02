@@ -3,7 +3,7 @@ import { Href, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, { Easing, SlideInLeft } from 'react-native-reanimated'
 
 import { AppSettings } from '@lib/constants/GlobalValues'

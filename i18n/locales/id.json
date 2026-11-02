@@ -979,5 +979,47 @@
         },
         "nameplaceholder": "Nama kosong tidak disarankan",
         "profilecount": "Profil Pengguna"
+    },
+    "plus": {
+        "backup": {
+            "title": "Backups",
+            "description": "A backup contains your chats, characters, lorebooks and memories. Downloaded models are not included.",
+            "createButton": "Create Backup",
+            "restoreButton": "Restore Backup",
+            "undoButton": "Undo Last Restore",
+            "passwordPlaceholder": "Password",
+            "create": {
+                "title": "Create Backup",
+                "description": "Choose a password to encrypt the backup. You will need it to restore.\n\nLeave it blank to save an unencrypted backup. Only unencrypted backups can be opened by the official ChatterUI.",
+                "confirm": "Save to Downloads"
+            },
+            "restore": {
+                "title": "Restore Backup",
+                "description": "Enter the backup's password. Leave it blank if the backup is not encrypted.",
+                "confirm": "Check Backup"
+            },
+            "restoreReady": {
+                "title": "Backup Ready",
+                "description": "The app will now restart with the restored data.\n\nYour current data is kept as a safety copy. Use 'Undo Last Restore' to switch back.",
+                "upgrade": "This backup is from an older version and will be upgraded automatically.",
+                "confirm": "Restart Now"
+            },
+            "restoreFailed": {
+                "title": "Could Not Restore",
+                "wrong_password": "The password is wrong, or this file is not a backup.",
+                "newer_version": "This backup was made by a newer version of the app. Update ChatterUI Plus, then try again.",
+                "not_chatterui": "This file is not a ChatterUI backup.",
+                "failed": "Something went wrong while reading the backup. Your current data has not been changed."
+            },
+            "undo": {
+                "title": "Undo Last Restore",
+                "description": "Switch back to the data you had before the last restore? The app will restart.",
+                "confirm": "Switch Back"
+            },
+            "toast": {
+                "saved": "Backup saved to Downloads: {{name}}",
+                "failed": "Backup failed: {{error}}"
+            }
+        }
     }
 }

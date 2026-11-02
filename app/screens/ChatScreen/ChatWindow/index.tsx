@@ -1,7 +1,7 @@
 import { ImageBackground } from 'expo-image'
 import { useEffect, useRef, useState } from 'react'
 import { FlatList } from 'react-native'
-import { useMMKVBoolean } from 'react-native-mmkv'
+import { useMMKVBoolean } from '@lib/storage/MMKV'
 import { useShallow } from 'zustand/react/shallow'
 
 import Drawer from '@components/views/Drawer'
