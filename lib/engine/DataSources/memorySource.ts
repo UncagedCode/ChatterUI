@@ -11,6 +11,8 @@ const MEMORY_CONTEXT_SHARE = 0.2
 
 export const createUserMemoryDataSource = async (): Promise<DataSource | undefined> => {
     if (!(mmkv.getBoolean(AppSettings.AutoMemory) ?? true)) return
+    // incognito chats start from a blank slate
+    if (Chats.useChatState.getState().incognito) return
     const facts = await Memory.db.query.enabledContents()
     if (facts.length === 0) return
     const estimate = estimateTokens(buildMemoryBlock(facts))
@@ -43,6 +45,7 @@ export const createUserMemoryDataSource = async (): Promise<DataSource | undefin
 
 export const createChatSummaryDataSource = async (): Promise<DataSource | undefined> => {
     if (!(mmkv.getBoolean(AppSettings.ChatSummaries) ?? true)) return
+    if (Chats.useChatState.getState().incognito) return
     const chatId = Chats.useChatState.getState().id
     if (!chatId) return
     const state = await Memory.db.query.chatState(chatId)

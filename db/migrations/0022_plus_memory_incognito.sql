@@ -15,3 +15,5 @@ CREATE TABLE `memories` (
 	`enabled` integer DEFAULT true NOT NULL,
 	FOREIGN KEY (`source_chat_id`) REFERENCES `chats`(`id`) ON UPDATE no action ON DELETE set null
 );
+--> statement-breakpoint
+ALTER TABLE `chats` ADD `incognito` integer DEFAULT false NOT NULL;

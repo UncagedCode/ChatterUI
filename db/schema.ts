@@ -145,6 +145,8 @@ export const chats = sqliteTable('chats', {
         .$onUpdateFn(() => Date.now()),
     name: text('name').notNull().default('New Chat'),
     scroll_offset: integer('scroll_offset', { mode: 'number' }).notNull().default(0),
+    /** ChatterUI Plus: temporary chat, deleted when left and never used for memory */
+    incognito: integer('incognito', { mode: 'boolean' }).notNull().default(false),
 })
 
 export const chatEntries = sqliteTable('chat_entries', {

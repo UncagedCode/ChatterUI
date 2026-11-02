@@ -17,6 +17,7 @@ import { AppDirectory, fileExists, readableFileSize, writeBase64File } from '@li
 import { checkGGMLDeprecated } from './GGML'
 import { KV, Model } from './Model'
 import { AppSettings } from '../../constants/GlobalValues'
+import { Chats } from '../../state/Chat'
 import { Logger } from '../../state/Logger'
 import { createMMKVStorage, mmkv } from '../../storage/MMKV'
 
@@ -286,7 +287,11 @@ export namespace Llama {
                         `\n---- Start Chat ${get().chatCount} ----\n${textTimings(timings)}\n---- End Chat ${get().chatCount} ----\n`
                     )
                     set({ chatCount: get().chatCount + 1 })
-                    if (mmkv.getBoolean(AppSettings.SaveLocalKV)) {
+                    // the KV cache file would hold the conversation: never write it for incognito
+                    if (
+                        mmkv.getBoolean(AppSettings.SaveLocalKV) &&
+                        !Chats.useChatState.getState().incognito
+                    ) {
                         await get().saveKV(params.prompt, params.media_paths ?? [])
                     }
                 })

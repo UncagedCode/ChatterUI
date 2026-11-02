@@ -69,6 +69,8 @@ type UpdateChatSwipeOptions = {
 
 export interface ChatState {
     id?: number
+    /** the open chat is incognito: no memory, deleted when left */
+    incognito: boolean
     scrollData?: ScrollData
     buffer: OutputBuffer
     // chat data
@@ -98,7 +100,9 @@ type OutputBuffer = {
 type ChatSwipeUpdated = Pick<ChatSwipe, 'swipe' | 'id'> & Partial<Omit<ChatSwipe, 'swipe' | 'id'>>
 // TODO: Functionalize and move elsewhere
 export const sendGenerateCompleteNotification = async () => {
-    const showMessage = mmkv.getBoolean(AppSettings.ShowNotificationText)
+    // incognito replies never appear in the notification shade
+    const showMessage =
+        mmkv.getBoolean(AppSettings.ShowNotificationText) && !Chats.useChatState.getState().incognito
 
     const notificationTitle = showMessage
         ? (Characters.useCharacterStore.getState().card?.name ?? '')
@@ -169,10 +173,21 @@ export const useInference = create<InferenceStateType>((set, get) => ({
     },
 }))
 
+const discardIncognitoChat = (chatId: number) => {
+    Chats.db.mutate
+        .deleteChat(chatId)
+        .then(() => Logger.info('Incognito chat discarded'))
+        .catch((e) => Logger.error(`Failed to discard incognito chat: ${e}`))
+}
+
 export namespace Chats {
     export const useChatState = create<ChatState>((set, get: () => ChatState) => ({
         buffer: { data: '' },
+        incognito: false,
         setId: async (chatId) => {
+            const previous = get()
+            if (previous.incognito && previous.id !== undefined && previous.id !== chatId)
+                discardIncognitoChat(previous.id)
             const data = { ...(await db.query.chatNew(chatId)), autoScroll: undefined }
             let autoScroll: { cause: 'search' | 'saveScroll'; index: number } | undefined =
                 undefined
@@ -195,10 +210,15 @@ export namespace Chats {
             set({
                 id: chatId,
                 scrollData: autoScroll,
+                incognito: !!data.incognito,
             })
         },
 
-        reset: () => set({ id: undefined }),
+        reset: () => {
+            const previous = get()
+            if (previous.incognito && previous.id !== undefined) discardIncognitoChat(previous.id)
+            set({ id: undefined, incognito: false })
+        },
 
         setBuffer: (newBuffer: OutputBuffer) => set({ buffer: newBuffer }),
         setBufferTimings: (timings) => set({ buffer: { ...get().buffer, timings } }),
@@ -248,6 +268,7 @@ export namespace Chats {
                     .select({
                         user_id: chats.user_id,
                         scroll_offset: chats.scroll_offset,
+                        incognito: chats.incognito,
                         entriesCount: count(chatEntries.id),
                     })
                     .from(chats)
@@ -268,6 +289,7 @@ export namespace Chats {
 
             export const chatNewest = async () => {
                 const result = await database.query.chats.findFirst({
+                    where: eq(chats.incognito, false),
                     orderBy: desc(chats.last_modified),
                 })
                 return result
@@ -380,7 +402,10 @@ export namespace Chats {
             }
         }
         export namespace mutate {
-            export const createChat = async (charId: number) => {
+            export const createChat = async (
+                charId: number,
+                options: { incognito?: boolean } = {}
+            ) => {
                 const card = await Characters.db.query.card(charId)
                 if (!card) {
                     Logger.error('Character does not exist!')
@@ -395,6 +420,8 @@ export namespace Chats {
                         .values({
                             character_id: charId,
                             user_id: userId ?? null,
+                            incognito: options.incognito ?? false,
+                            ...(options.incognito ? { name: t('plus.incognito.chatName') } : {}),
                         })
                         .returning({ chatId: chats.id })
 
@@ -586,6 +613,16 @@ export namespace Chats {
                     .where(eq(chatEntries.chat_id, chatId))
                 await Promise.all(attachments.map(async (item) => deleteFile(item.uri)))
                 await database.delete(chats).where(eq(chats.id, chatId))
+            }
+
+            /** Removes every incognito chat (used at startup, after the app was closed). */
+            export const deleteIncognitoChats = async () => {
+                const rows = await database
+                    .select({ id: chats.id })
+                    .from(chats)
+                    .where(eq(chats.incognito, true))
+                for (const row of rows) await deleteChat(row.id)
+                if (rows.length > 0) Logger.info(`Removed ${rows.length} incognito chat(s)`)
             }
 
             export const deleteChatEntry = async (entryId: number) => {

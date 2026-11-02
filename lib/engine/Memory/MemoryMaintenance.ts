@@ -122,11 +122,14 @@ export const startMemoryMaintenance = () => {
             return
         }
         if (!previous.nowGenerating) return
-        const chatId = Chats.useChatState.getState().id
-        if (!chatId) return
+        const { id: chatId, incognito } = Chats.useChatState.getState()
+        // nothing from an incognito chat is summarised or remembered
+        if (!chatId || incognito) return
         if (timer) clearTimeout(timer)
         timer = setTimeout(() => {
             if (useInference.getState().nowGenerating) return
+            const current = Chats.useChatState.getState()
+            if (current.incognito || current.id !== chatId) return
             maintainChat(chatId)
         }, IDLE_DELAY_MS)
     })

@@ -1056,6 +1056,11 @@
                 "password": "{{name}} is password protected",
                 "unreadable": "Could not read {{name}}"
             }
+        },
+        "incognito": {
+            "newChat": "New Incognito Chat",
+            "chatName": "Incognito",
+            "banner": "Incognito: this chat can't see your memories, won't create new ones, and is deleted when you leave it."
         }
     }
 }

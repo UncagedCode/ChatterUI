@@ -75,6 +75,13 @@ const ChatsDrawer = () => {
             })
     }
 
+    const handleCreateIncognitoChat = async () => {
+        if (charId)
+            Chats.db.mutate.createChat(charId, { incognito: true }).then((chatId) => {
+                if (chatId) handleLoadChat(chatId)
+            })
+    }
+
     return (
         <Drawer.Body drawerID={Drawer.ID.CHATLIST} drawerStyle={styles.drawer} direction="right">
             <View
@@ -120,10 +127,16 @@ const ChatsDrawer = () => {
                             removeClippedSubviews={false}
                         />
                     </Animated.View>
-                    <Animated.View entering={FadeIn} exiting={FadeOut}>
+                    <Animated.View entering={FadeIn} exiting={FadeOut} style={{ rowGap: 8 }}>
                         <ThemedButton
                             label={t('chat.drawer.actions.startNewChat')}
                             onPress={handleCreateChat}
+                        />
+                        <ThemedButton
+                            variant="secondary"
+                            iconName="eye-invisible"
+                            label={t('plus.incognito.newChat')}
+                            onPress={handleCreateIncognitoChat}
                         />
                     </Animated.View>
                 </>

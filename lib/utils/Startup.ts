@@ -28,6 +28,14 @@ import { Logger } from '../state/Logger'
 import { mmkv } from '../storage/MMKV'
 import { Theme } from '../theme/ThemeManager'
 
+const removeLeftoverIncognitoChats = async () => {
+    try {
+        await Chats.db.mutate.deleteIncognitoChats()
+    } catch (e) {
+        Logger.error(`Failed to remove incognito chats: ${e}`)
+    }
+}
+
 const loadNewestChat = async () => {
     Logger.info('Loading latest chat')
     const newestChat = await Chats.db.query.chatNewest()
@@ -37,6 +45,7 @@ const loadNewestChat = async () => {
 }
 
 export const loadChatOnInit = async () => {
+    await removeLeftoverIncognitoChats()
     if (!mmkv.getBoolean(AppSettings.ChatOnStartup)) return
     await loadNewestChat()
     router.push('/screens/ChatScreen')
@@ -286,6 +295,7 @@ export const startupApp = () => {
     lockScreenOrientation()
     migrateData()
     startMemoryMaintenance()
+    removeLeftoverIncognitoChats()
     const backgroundColor = Theme.useColorState.getState().color.neutral._100
     setUIBackgroundColor(backgroundColor)
 

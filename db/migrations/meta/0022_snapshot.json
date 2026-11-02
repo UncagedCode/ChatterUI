@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5be80d03-bccf-4769-ac38-4429eb96a5cd",
+  "id": "a5979ffc-525e-4e66-b6ae-09df6301f7eb",
   "prevId": "5c35dffd-8d26-4b73-a233-0cf86769c56d",
   "tables": {
     "author_notes": {
@@ -874,6 +874,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
+        },
+        "incognito": {
+          "name": "incognito",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         }
       },
       "indexes": {},

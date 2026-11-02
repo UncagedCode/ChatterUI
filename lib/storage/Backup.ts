@@ -44,6 +44,8 @@ export const exportBackup = async (password: string) => {
         const key = encrypted ? sqlcipherPassphrase(password) : "''"
         sqliteDB.execSync(`ATTACH DATABASE ${sqlPath(target.uri)} AS backup KEY ${key};`)
         sqliteDB.execSync(`SELECT sqlcipher_export('backup');`)
+        // incognito chats are never part of a backup
+        sqliteDB.execSync(`DELETE FROM backup.chats WHERE incognito = 1;`)
         detachQuietly('backup')
         await localDownload(target.uri.replace('file://', ''))
         return { ok: true as const, name }

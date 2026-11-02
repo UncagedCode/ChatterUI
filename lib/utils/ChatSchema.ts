@@ -54,6 +54,8 @@ export const ChatImportSchema = z.object({
     create_date: z.coerce.date(),
     user_id: z.number().nullable(),
     scroll_offset: z.number(),
+    // imported chats are always kept, even if they were exported from an incognito chat
+    incognito: z.unknown().transform((): boolean => false),
     messages: z.array(MessageSchema),
 })
 
