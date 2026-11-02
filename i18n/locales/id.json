@@ -1047,6 +1047,15 @@
                 "remembered": "Remembered {{count}} new thing(s) about you"
             },
             "listHint": "Tap a memory to edit it, hold it to delete it, or use the switch to pause it."
+        },
+        "documents": {
+            "attach": "Attach File",
+            "errors": {
+                "too_large": "{{name}} is too large (25 MB max)",
+                "no_text": "No text found in {{name}}. Scanned PDFs without a text layer can't be read.",
+                "password": "{{name}} is password protected",
+                "unreadable": "Could not read {{name}}"
+            }
         }
     }
 }

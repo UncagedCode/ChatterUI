@@ -9,7 +9,8 @@ import { defaultSystemPromptFormat, InstructTokenCache, InstructType } from '@li
 import { Logger } from '@lib/state/Logger'
 import { replaceMacros } from '@lib/state/Macros'
 import { mmkv } from '@lib/storage/MMKV'
-import { readBase64Async } from '@lib/utils/File'
+import { formatDocumentsForContext } from '@lib/utils/DocumentText'
+import { readBase64Async, readStringAsync } from '@lib/utils/File'
 import { Macro } from '@lib/utils/Macros'
 
 import { APIConfiguration, APIValues } from './APIBuilder.types'
@@ -25,6 +26,35 @@ export type TokenCache = {
     userCache: CharacterTokenCache
     characterCache: CharacterTokenCache
     instructCache: InstructTokenCache
+}
+
+// Document text is re-read and re-counted for every reply; cache it per file and window size
+const documentCache = new Map<string, { text: string; tokens: number }>()
+
+const loadDocuments = async (
+    entry: ChatEntry,
+    maxLength: number,
+    tokenizer: ContextBuilderParams['tokenizer']
+) => {
+    const documents = entry.attachments?.filter((item) => item.type === 'document') ?? []
+    if (documents.length === 0) return { text: '', tokens: 0 }
+    const key = documents.map((item) => item.uri).join('|') + '@' + maxLength
+    const cached = documentCache.get(key)
+    if (cached) return cached
+    const loaded = await Promise.all(
+        documents.map(async (item) => ({
+            name: item.name,
+            text: await readStringAsync(item.uri).catch(() => ''),
+        }))
+    )
+    const text = formatDocumentsForContext(
+        loaded.filter((item) => item.text),
+        maxLength
+    )
+    const result = { text, tokens: text ? await tokenizer(text) : 0 }
+    if (documentCache.size > 50) documentCache.clear()
+    documentCache.set(key, result)
+    return result
 }
 
 const printContext = (context: string) => {
@@ -155,7 +185,9 @@ export const collectContext = async (params: ContextBuilderParams & { mode: 'cha
                 : instructCache.output_prefix_length
         }
 
-        const shardLen = swipeLen + timestampLen + nameLen + instructLen
+        const documents = await loadDocuments(message, maxLength, tokenizer)
+
+        const shardLen = swipeLen + timestampLen + nameLen + instructLen + documents.tokens
 
         // HARD LIMIT (always enforced)
         if (totalLength + shardLen > maxLength && !bypassContextLength) {
@@ -168,7 +200,9 @@ export const collectContext = async (params: ContextBuilderParams & { mode: 'cha
 
         const role: 'user' | 'assistant' = message.is_user ? 'user' : 'assistant'
 
-        const content = replaceMacrosInternal(`${timestamp}${name}${swipe.swipe}`, instruct)
+        // document text is added after macro replacement so file contents are passed as-is
+        const content =
+            replaceMacrosInternal(`${timestamp}${name}${swipe.swipe}`, instruct) + documents.text
 
         let attachments: ContentTypes[] | undefined
 

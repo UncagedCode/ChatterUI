@@ -20,6 +20,7 @@ import {
 } from '@db/schema'
 import { Tokenizer } from '@lib/engine/Tokenizer'
 import { replaceMacros } from '@lib/state/Macros'
+import type { DocumentAttachment } from '@lib/utils/Documents'
 import { AppDirectory, copyFile, deleteFile, fileInfo } from '@lib/utils/File'
 import { convertToFormatInstruct } from '@lib/utils/TextFormat'
 
@@ -445,7 +446,7 @@ export namespace Chats {
                 name: string,
                 isUser: boolean,
                 message: string,
-                attachments: string[] = []
+                attachments: (string | DocumentAttachment)[] = []
             ) => {
                 /**order is no longer used, may be useless */
                 const { order } = (await database.query.chatEntries.findFirst({
@@ -473,8 +474,9 @@ export namespace Chats {
                 await deactivateOtherSwipes(entryId, swipeId)
 
                 await Promise.all(
-                    attachments.map(async (uri) => {
-                        await createAttachment(entryId, uri)
+                    attachments.map(async (item) => {
+                        if (typeof item === 'string') await createAttachment(entryId, item)
+                        else await createDocumentAttachment(entryId, item)
                     })
                 )
 
@@ -667,6 +669,29 @@ export namespace Chats {
                         chat_entry_id: entryId,
                         uri: newURI,
                         mime_type: mimeType,
+                    })
+                    .returning()
+                return attachment
+            }
+
+            /** Stores the extracted text of a text file or PDF; the original file is not kept. */
+            export const createDocumentAttachment = async (
+                entryId: number,
+                document: DocumentAttachment
+            ) => {
+                if (!fileInfo(document.uri).exists) return
+                const newURI = AppDirectory.Attachments + randomUUID() + '.txt'
+                if (!(await copyFile({ from: document.uri, to: newURI }))) return
+                deleteFile(document.uri)
+                const [attachment] = await database
+                    .insert(chatAttachments)
+                    .values({
+                        type: 'document',
+                        name: document.name,
+                        chat_entry_id: entryId,
+                        uri: newURI,
+                        mime_type: 'text/plain',
+                        size: fileInfo(newURI).size ?? 0,
                     })
                     .returning()
                 return attachment

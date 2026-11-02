@@ -5,7 +5,7 @@ import { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync } from 'ex
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, Pressable, TextInput, TouchableOpacity, View } from 'react-native'
+import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useMMKVBoolean } from '@lib/storage/MMKV'
 import Animated, {
     BounceIn,
@@ -31,6 +31,7 @@ import { Characters } from '@lib/state/Characters'
 import { Chats, useInference } from '@lib/state/Chat'
 import { useChatInputTextStore } from '@lib/state/components/ChatInput'
 import { Logger } from '@lib/state/Logger'
+import { pickDocuments } from '@lib/utils/Documents'
 import { Theme } from '@lib/theme/ThemeManager'
 
 import ChatOptions from './ChatInputOptions'
@@ -105,7 +106,11 @@ const ChatInput = () => {
                 userName ?? '',
                 true,
                 newMessage,
-                attachments.map((item) => item.uri)
+                attachments.map((item) =>
+                    item.type === 'document'
+                        ? { uri: item.uri, name: item.name, type: 'document' as const }
+                        : item.uri
+                )
             )
         try {
             const result = await Chats.db.mutate.createEntry(chatId, charName ?? '', false, '')
@@ -155,6 +160,13 @@ const ChatInput = () => {
             .filter((item) => !attachments.some((a) => a.name === item.name)) as Attachment[]
 
         return setAttachments([...attachments, ...newAttachments])
+    }
+
+    const handlePickDocument = async () => {
+        const { documents, errors } = await pickDocuments()
+        for (const error of errors)
+            Logger.warnToast(t(`plus.documents.errors.${error.error}`, { name: error.name }))
+        if (documents.length > 0) setAttachments((current) => [...current, ...documents])
     }
 
     return (
@@ -209,17 +221,43 @@ const ChatInput = () => {
                             entering={BounceIn}
                             exiting={ZoomOut.duration(100)}
                             style={{ alignItems: 'center', rowGap: 8 }}>
-                            <Image
-                                source={{ uri: item.uri }}
-                                style={{
-                                    width: 128,
-                                    height: undefined,
-                                    aspectRatio: 1,
-                                    borderRadius: borderRadius.m,
-                                    borderWidth: 1,
-                                    borderColor: color.primary._500,
-                                }}
-                            />
+                            {item.type === 'document' ? (
+                                <View
+                                    style={{
+                                        width: 128,
+                                        aspectRatio: 1,
+                                        borderRadius: borderRadius.m,
+                                        borderWidth: 1,
+                                        borderColor: color.primary._500,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: spacing.m,
+                                        rowGap: spacing.s,
+                                    }}>
+                                    <MaterialIcons
+                                        name="description"
+                                        size={36}
+                                        color={color.text._300}
+                                    />
+                                    <Text
+                                        numberOfLines={3}
+                                        style={{ color: color.text._300, textAlign: 'center' }}>
+                                        {item.name}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Image
+                                    source={{ uri: item.uri }}
+                                    style={{
+                                        width: 128,
+                                        height: undefined,
+                                        aspectRatio: 1,
+                                        borderRadius: borderRadius.m,
+                                        borderWidth: 1,
+                                        borderColor: color.primary._500,
+                                    }}
+                                />
+                            )}
 
                             <ThemedButton
                                 iconName="close"
@@ -290,6 +328,14 @@ const ChatInput = () => {
                                         onPress: async (close) => {
                                             close()
                                             handlePickImage()
+                                        },
+                                    },
+                                    {
+                                        label: t('plus.documents.attach'),
+                                        icon: 'file-text',
+                                        onPress: async (close) => {
+                                            close()
+                                            handlePickDocument()
                                         },
                                     },
                                 ]}

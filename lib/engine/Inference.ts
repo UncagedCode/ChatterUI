@@ -313,7 +313,9 @@ async function obtainFields(): Promise<APIBuilderParams | void> {
                     // assume that token length hasnt been calculated
                     const tokenCount = await tokenizer(
                         activeSwipe.swipe,
-                        entry.attachments.map((item) => item.uri)
+                        entry.attachments
+                            .filter((item) => item.type !== 'document')
+                            .map((item) => item.uri)
                     )
                     await Chats.db.mutate.updateSwipeTokenLength(activeSwipe.id, tokenCount)
                 }
