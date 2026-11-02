@@ -53,7 +53,7 @@ const completionTaskOptions = {
         type: 'mipmap',
     },
     color: '#403737',
-    linkingURI: 'chatterui://',
+    linkingURI: 'chatteruiplus://',
     progressBar: {
         max: 1,
         value: 0,

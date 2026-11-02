@@ -7,7 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
+    "test": "jest",
     "postinstall": "patch-package",
     "lint": "eslint app db lib --ignore-pattern db/migrations",
     "lint:fix": "eslint app db lib --ignore-pattern db/migrations --fix",
@@ -18,13 +18,11 @@
     "migrate": "npx drizzle-kit generate",
     "patchsql": "npx patch-package expo-sqlite --exclude \"\\.project|\\.cxx|\\.c|\\.h|build|bin\" --case-sensitive-path-filtering",
     "patchfetch": "npx patch-package expo --include '\".*fetch\\.ts$|.*NativeResponse\\.kt$\"'",
-    "patchfs": "npx patch-package expo-file-system --include \"\\.kt$\""
+    "patchfs": "npx patch-package expo-file-system --include \"\\.kt$\"",
+    "test:watch": "jest --watchAll"
   },
   "jest": {
-    "preset": "jest-expo",
-    "moduleNameMapper": {
-      "^expo-modules-core(|/.*)$": "<rootDir>/node_modules/expo/node_modules/expo-modules-core$1"
-    }
+    "preset": "jest-expo"
   },
   "dependencies": {
     "@babel/traverse": "^7.24.1",

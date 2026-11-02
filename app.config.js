@@ -2,13 +2,13 @@ const IS_DEV = process.env.APP_VARIANT === 'development'
 
 module.exports = {
     expo: {
-        name: IS_DEV ? 'ChatterUI (DEV)' : 'ChatterUI',
+        name: IS_DEV ? 'ChatterUI Plus (DEV)' : 'ChatterUI Plus',
         newArchEnabled: true,
         slug: 'ChatterUI',
         version: '0.10.1',
         orientation: 'default',
         icon: './assets/images/icon.png',
-        scheme: 'chatterui',
+        scheme: 'chatteruiplus',
         userInterfaceStyle: 'automatic',
         assetBundlePatterns: ['**/*'],
         ios: {
@@ -18,8 +18,8 @@ module.exports = {
                 tinted: './assets/images/icon.png',
             },
             supportsTablet: true,
-            package: IS_DEV ? 'com.Vali98.ChatterUIDev' : 'com.Vali98.ChatterUI',
-            bundleIdentifier: IS_DEV ? 'com.Vali98.ChatterUIDev' : 'com.Vali98.ChatterUI',
+            package: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
+            bundleIdentifier: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
         },
         android: {
             adaptiveIcon: {
@@ -28,8 +28,11 @@ module.exports = {
                 monochromeImage: './assets/images/adaptive-icon-foreground.png',
                 backgroundColor: '#000',
             },
-            package: IS_DEV ? 'com.Vali98.ChatterUIDev' : 'com.Vali98.ChatterUI',
+            package: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
             userInterfaceStyle: 'dark',
+            // Keep chats out of Android/Google cloud backups: the database is encrypted with a
+            // key that never leaves this device, so a cloud copy would be unreadable anyway.
+            allowBackup: false,
             permissions: [
                 'android.permission.FOREGROUND_SERVICE',
                 'android.permission.WAKE_LOCK',
@@ -126,9 +129,6 @@ module.exports = {
         extra: {
             router: {
                 origin: false,
-            },
-            eas: {
-                projectId: 'd588a96a-5eb0-457a-85bc-e21acfdc60e9',
             },
         },
     },
