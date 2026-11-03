@@ -66,7 +66,9 @@ jobs:
               # R8 (the release optimiser) runs out of the default heap on this app
               run: |
                   sed -i '/^org.gradle.jvmargs=/d' android/gradle.properties
-                  echo 'org.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError' >> android/gradle.properties
+                  # leading newline: the generated file may not end with one
+                  printf '\norg.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g\n' >> android/gradle.properties
+                  grep jvmargs android/gradle.properties
 
             - name: Install signing key
               env:
@@ -82,7 +84,7 @@ jobs:
 
             - name: Build release APK (arm64)
               working-directory: android
-              run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+              run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon "-Dorg.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g"
 
             - name: Collect APK
               id: apk
