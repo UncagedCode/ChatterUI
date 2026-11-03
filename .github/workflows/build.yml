@@ -45,6 +45,9 @@ jobs:
                   java-version: 17
 
             - uses: gradle/actions/setup-gradle@v4
+              with:
+                  # save the Gradle cache from this branch too, so later builds are faster
+                  cache-read-only: false
 
             - name: Install JS dependencies
               run: npm ci
@@ -58,6 +61,12 @@ jobs:
               run: npx expo prebuild --platform android --clean --no-install
               env:
                   NODE_ENV: production
+
+            - name: Give the build more memory
+              # R8 (the release optimiser) runs out of the default heap on this app
+              run: |
+                  sed -i '/^org.gradle.jvmargs=/d' android/gradle.properties
+                  echo 'org.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError' >> android/gradle.properties
 
             - name: Install signing key
               env:
