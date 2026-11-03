@@ -2,13 +2,13 @@ const IS_DEV = process.env.APP_VARIANT === 'development'
 
 module.exports = {
     expo: {
-        name: IS_DEV ? 'ChatterUI Plus (DEV)' : 'ChatterUI Plus',
+        name: 'ChatterUI Diag B'
         newArchEnabled: true,
         slug: 'ChatterUI',
         version: '0.10.1',
         orientation: 'default',
         icon: './assets/images/icon.png',
-        scheme: 'chatteruiplus',
+        scheme: 'chatteruidiagb',
         userInterfaceStyle: 'automatic',
         assetBundlePatterns: ['**/*'],
         ios: {
@@ -18,8 +18,8 @@ module.exports = {
                 tinted: './assets/images/icon.png',
             },
             supportsTablet: true,
-            package: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
-            bundleIdentifier: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
+            package: 'com.uncagedcode.chatterui.diagb',
+            bundleIdentifier: 'com.uncagedcode.chatterui.diagb',
         },
         android: {
             adaptiveIcon: {
@@ -28,7 +28,7 @@ module.exports = {
                 monochromeImage: './assets/images/adaptive-icon-foreground.png',
                 backgroundColor: '#000',
             },
-            package: IS_DEV ? 'com.uncagedcode.chatteruiplus.dev' : 'com.uncagedcode.chatteruiplus',
+            package: 'com.uncagedcode.chatterui.diagb',
             userInterfaceStyle: 'dark',
             // Keep chats out of Android/Google cloud backups: the database is encrypted with a
             // key that never leaves this device, so a cloud copy would be unreadable anyway.
@@ -91,7 +91,7 @@ module.exports = {
                     cameraPermission: 'Allow ChatterUI to access your camera',
                 },
             ],
-            ['expo-sqlite', { withSQLiteVecExtension: true, useSQLCipher: true }],
+            ['expo-sqlite', { withSQLiteVecExtension: true }],
             [
                 'expo-image-picker',
                 {

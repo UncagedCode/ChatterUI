@@ -5,6 +5,8 @@ on:
         branches:
             - master
             - improvements
+            - diag-a
+            - diag-b
         paths-ignore:
             - 'README.md'
             - 'docs/**'

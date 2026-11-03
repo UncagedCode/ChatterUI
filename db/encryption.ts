@@ -162,6 +162,8 @@ export const openEncryptedDatabase = (
     name: string,
     open: (name: string) => SQLiteDatabase
 ): SQLiteDatabase => {
+    // DIAG B: SQLCipher disabled to test whether it slows the model
+    if (name) return open(name)
     try {
         return openEncryptedDatabaseInternal(name, open)
     } catch (e) {
