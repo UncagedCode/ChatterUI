@@ -1,0 +1,22 @@
+name: Diag compare APKs
+on:
+    push:
+        branches: [diag]
+jobs:
+    compare:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Official APK native libs
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release view v0.10.0 -R Vali-98/ChatterUI --json assets --jq '.assets[].name'
+                  gh release download v0.10.0 -R Vali-98/ChatterUI -p '*.apk' -D official
+                  ls -la official
+                  for f in official/*.apk; do echo "== $f"; unzip -l "$f" | grep -E 'lib/arm64|assets/.*htp|\.so$' | sort -k4; done
+            - name: Our APK native libs
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release download plus-build-5 -R UncagedCode/ChatterUI -p '*.apk' -D ours
+                  for f in ours/*.apk; do echo "== $f"; unzip -l "$f" | grep -E 'lib/arm64|assets/.*htp|\.so$' | sort -k4; done
