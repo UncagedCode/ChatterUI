@@ -58,13 +58,6 @@ jobs:
               run: |
                   npx tsc --noEmit
 
-            - name: Fetch the engine's prebuilt libraries
-              # The library author's prebuilt llama.cpp binaries; our own from-source build
-              # processed prompts ~20x slower on Q4_K files.
-              run: |
-                  node node_modules/cui-llama.rn/install/download-native-artifacts.js
-                  ls -la node_modules/cui-llama.rn/android/src/main/jniLibs/arm64-v8a
-
             - name: Generate Android project
               run: npx expo prebuild --platform android --clean --no-install
               env:
@@ -92,7 +85,7 @@ jobs:
 
             - name: Build release APK (arm64)
               working-directory: android
-              run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon -PrnllamaBuildFromSource=false "-Dorg.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g"
+              run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon "-Dorg.gradle.jvmargs=-Xmx10g -XX:MaxMetaspaceSize=1g"
 
             - name: Collect APK
               id: apk
